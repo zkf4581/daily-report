@@ -14,7 +14,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { formatMinutes, todayInTimeZone } from '@/lib/datetime'
+import { todayInTimeZone } from '@/lib/datetime'
 import { createClient } from '@/lib/supabase/server'
 
 import { saveTodayReport } from './actions'
@@ -28,6 +28,15 @@ type SearchParams = Promise<{
   error?: string | string[]
   saved?: string | string[]
 }>
+
+type MetricItem = {
+  id: string
+  name: string
+  unit: string
+  sort_order: number
+}
+
+type MetricValue = { metric_item_id: string; value: string | number }
 
 export default async function TodayPage({
   searchParams,
@@ -48,12 +57,33 @@ export default async function TodayPage({
   const timezone = profile?.timezone || DEFAULT_TZ
   const reportDate = todayInTimeZone(timezone)
 
-  const { data: existing } = await supabase
-    .from('reports')
-    .select('done, blockers, tomorrow_plan, minutes_spent, updated_at')
-    .eq('user_id', user.id)
-    .eq('report_date', reportDate)
-    .maybeSingle()
+  const [existingRes, itemsRes, metricsRes] = await Promise.all([
+    supabase
+      .from('reports')
+      .select('done, blockers, tomorrow_plan, updated_at')
+      .eq('user_id', user.id)
+      .eq('report_date', reportDate)
+      .maybeSingle(),
+    supabase
+      .from('metric_items')
+      .select('id, name, unit, sort_order')
+      .eq('is_active', true)
+      .order('sort_order', { ascending: true })
+      .order('created_at', { ascending: true }),
+    supabase
+      .from('report_metrics')
+      .select('metric_item_id, value')
+      .eq('user_id', user.id)
+      .eq('report_date', reportDate),
+  ])
+  const existing = existingRes.data
+  const items: MetricItem[] = itemsRes.data ?? []
+  const valuesByItem = new Map<string, string>()
+  for (const m of (metricsRes.data ?? []) as MetricValue[]) {
+    // PostgREST returns numeric as string to preserve precision; keep as string
+    // for safe round-tripping into <input type=number defaultValue>.
+    valuesByItem.set(m.metric_item_id, String(m.value))
+  }
 
   const { error, saved } = await searchParams
   const errorCode = Array.isArray(error) ? error[0] : error
@@ -92,21 +122,56 @@ export default async function TodayPage({
               )}
             </CardTitle>
             <CardDescription>
-              当天可反复保存；过了今天就自动锁定为只读历史。
+              当天可反复保存；过了今天就自动锁定为只读历史。至少填写一项（完成情况或任一统计项）。
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form action={saveTodayReport} className="flex flex-col gap-5">
+              {items.length > 0 ? (
+                <fieldset className="flex flex-col gap-3 rounded-md border p-4">
+                  <legend className="px-1 text-sm font-medium">
+                    今日数据（选填，可留空）
+                  </legend>
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    {items.map((it) => {
+                      const inputId = `metric_${it.id}`
+                      return (
+                        <div key={it.id} className="flex flex-col gap-1.5">
+                          <Label htmlFor={inputId}>
+                            {it.name}
+                            <span className="ml-1 text-xs font-normal text-muted-foreground">
+                              ({it.unit})
+                            </span>
+                          </Label>
+                          <Input
+                            id={inputId}
+                            name={inputId}
+                            type="number"
+                            min={0}
+                            step="any"
+                            inputMode="decimal"
+                            defaultValue={valuesByItem.get(it.id) ?? ''}
+                            placeholder="留空表示未做"
+                          />
+                        </div>
+                      )
+                    })}
+                  </div>
+                </fieldset>
+              ) : (
+                <p className="rounded-md border border-dashed p-3 text-xs text-muted-foreground">
+                  当前没有启用的统计项；可仅填写下方文字内容。
+                </p>
+              )}
+
               <div className="flex flex-col gap-2">
-                <Label htmlFor="done">今天完成了什么 *</Label>
+                <Label htmlFor="done">今天完成了什么</Label>
                 <Textarea
                   id="done"
                   name="done"
-                  required
-                  minLength={1}
                   rows={5}
                   defaultValue={existing?.done ?? ''}
-                  placeholder="必填，简要列出今日完成的工作"
+                  placeholder="选填，简要列出今日完成的工作"
                 />
               </div>
               <div className="flex flex-col gap-2">
@@ -129,33 +194,15 @@ export default async function TodayPage({
                   placeholder="选填"
                 />
               </div>
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="minutes_spent">耗时（分钟，选填）</Label>
-                <Input
-                  id="minutes_spent"
-                  name="minutes_spent"
-                  type="number"
-                  min={0}
-                  step={1}
-                  inputMode="numeric"
-                  defaultValue={existing?.minutes_spent ?? ''}
-                  placeholder="例如 480 = 8 小时"
-                />
-                {existing?.minutes_spent != null ? (
-                  <p className="text-xs text-muted-foreground">
-                    当前：{formatMinutes(existing.minutes_spent)}
-                  </p>
-                ) : null}
-              </div>
 
-              {errorCode === 'done' ? (
+              {errorCode === 'empty' ? (
                 <p role="alert" className="text-sm text-destructive">
-                  「今天完成了什么」是必填项。
+                  请至少填写一项（完成情况或任一统计项）。
                 </p>
               ) : null}
-              {errorCode === 'minutes' ? (
+              {errorCode === 'metric' ? (
                 <p role="alert" className="text-sm text-destructive">
-                  耗时必须是大于等于 0 的整数（分钟）。
+                  统计项填写有误：请输入大于等于 0 的有限数（可含小数）。
                 </p>
               ) : null}
               {errorCode === 'save' ? (

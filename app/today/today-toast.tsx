@@ -8,8 +8,8 @@ import { toast } from 'sonner'
 // copy stay consistent. Messages are friendly and do not leak DB details
 // (see §14).
 const ERROR_MESSAGES: Record<string, string> = {
-  done: '「今天完成了什么」是必填项',
-  minutes: '耗时必须是大于等于 0 的整数（分钟）',
+  empty: '请至少填写一项（完成情况或任一统计项）',
+  metric: '统计项填写有误：请输入大于等于 0 的有限数（可含小数）',
   save: '保存失败，请稍后再试',
 }
 

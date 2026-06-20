@@ -21,7 +21,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { formatMinutes, todayInTimeZone } from '@/lib/datetime'
+import { todayInTimeZone } from '@/lib/datetime'
 import { createClient } from '@/lib/supabase/server'
 
 export const metadata = { title: '管理员 · 今日提交状态' }
@@ -43,10 +43,9 @@ type Contractor = {
 
 type ReportRow = {
   user_id: string
-  done: string
+  done: string | null
   blockers: string | null
   tomorrow_plan: string | null
-  minutes_spent: number | null
   updated_at: string
 }
 
@@ -100,7 +99,7 @@ export default async function AdminPage({
   // rows; the explicit `eq('report_date', …)` uses the (report_date) index.
   const { data: reports } = await supabase
     .from('reports')
-    .select('user_id, done, blockers, tomorrow_plan, minutes_spent, updated_at')
+    .select('user_id, done, blockers, tomorrow_plan, updated_at')
     .eq('report_date', selectedDate)
   const reportsByUser = new Map<string, ReportRow>()
   for (const r of (reports ?? []) as ReportRow[]) reportsByUser.set(r.user_id, r)
@@ -200,7 +199,6 @@ export default async function AdminPage({
                     <TableHead>姓名 / 邮箱</TableHead>
                     <TableHead className="w-24">状态</TableHead>
                     <TableHead>摘要</TableHead>
-                    <TableHead className="w-24">耗时</TableHead>
                     <TableHead className="w-24 text-right">操作</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -225,16 +223,13 @@ export default async function AdminPage({
                           <SubmissionStatusBadge submitted={Boolean(r)} />
                         </TableCell>
                         <TableCell className="max-w-md text-sm text-foreground/80">
-                          {r ? (
+                          {r && r.done ? (
                             <span className="line-clamp-2 whitespace-pre-wrap break-words">
                               {truncate(r.done, 160)}
                             </span>
                           ) : (
                             <span className="text-muted-foreground">—</span>
                           )}
-                        </TableCell>
-                        <TableCell className="text-sm">
-                          {r ? formatMinutes(r.minutes_spent) : '—'}
                         </TableCell>
                         <TableCell className="text-right">
                           <Link
