@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 
-import { LogoutButton } from '@/components/logout-button'
+import { AdminNav } from '@/components/admin-nav'
 import {
   Card,
   CardContent,
@@ -57,7 +57,7 @@ export default async function AdminMetricsPage() {
               新增 / 编辑 / 停用统计项；停用项不再出现在外包填写表单，已填写的历史数据保留。
             </p>
           </div>
-          <LogoutButton />
+          <AdminNav />
         </header>
 
         <Card>

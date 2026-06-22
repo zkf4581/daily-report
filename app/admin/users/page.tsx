@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 
-import { LogoutButton } from '@/components/logout-button'
+import { AdminNav } from '@/components/admin-nav'
 import {
   Card,
   CardContent,
@@ -56,7 +56,7 @@ export default async function AdminUsersPage() {
               创建、停用 / 启用、重置外包账号。
             </p>
           </div>
-          <LogoutButton />
+          <AdminNav />
         </header>
 
         <Card>

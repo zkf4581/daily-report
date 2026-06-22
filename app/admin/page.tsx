@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 
-import { LogoutButton } from '@/components/logout-button'
+import { AdminNav } from '@/components/admin-nav'
 import { AnimatedGradientText } from '@/components/magicui/animated-gradient-text'
 import { SubmissionStatusBadge } from '@/components/status-badge'
 import { Button } from '@/components/ui/button'
@@ -135,7 +135,7 @@ export default async function AdminPage({
               {displayName} · {adminTz} · 今天 {today}
             </p>
           </div>
-          <LogoutButton />
+          <AdminNav />
         </header>
 
         <Card>
