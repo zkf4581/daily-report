@@ -1,5 +1,8 @@
 import { redirect } from 'next/navigation'
 
+import { AnimatedGradientText } from '@/components/magicui/animated-gradient-text'
+import { BorderBeam } from '@/components/magicui/border-beam'
+import { DotPattern } from '@/components/magicui/dot-pattern'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -10,6 +13,7 @@ import {
 } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/server'
 
 import { signIn } from './actions'
@@ -40,10 +44,33 @@ export default async function LoginPage({
   const errorCode = Array.isArray(error) ? error[0] : error
 
   return (
-    <main className="flex flex-1 items-center justify-center bg-zinc-50 px-4 py-16 dark:bg-black">
-      <Card className="w-full max-w-sm">
+    <main className="relative flex flex-1 items-center justify-center overflow-hidden bg-zinc-50 px-4 py-16 dark:bg-black">
+      <DotPattern
+        glow
+        className={cn(
+          'absolute inset-0 -z-10 text-zinc-400/50 dark:text-zinc-600/40',
+          '[mask-image:radial-gradient(ellipse_at_center,white,transparent_70%)]',
+          'motion-reduce:hidden',
+        )}
+      />
+      <DotPattern
+        className={cn(
+          'absolute inset-0 -z-10 hidden text-zinc-400/40 dark:text-zinc-600/30',
+          '[mask-image:radial-gradient(ellipse_at_center,white,transparent_70%)]',
+          'motion-reduce:block',
+        )}
+      />
+      <Card className="relative w-full max-w-sm">
         <CardHeader>
-          <CardTitle>登录</CardTitle>
+          <CardTitle>
+            <AnimatedGradientText
+              className="text-base font-medium motion-reduce:animate-none"
+              colorFrom="#6366f1"
+              colorTo="#ec4899"
+            >
+              登录
+            </AnimatedGradientText>
+          </CardTitle>
           <CardDescription>用邮箱和密码登录日报系统</CardDescription>
         </CardHeader>
         <CardContent>
@@ -84,6 +111,13 @@ export default async function LoginPage({
             </Button>
           </form>
         </CardContent>
+        <BorderBeam
+          duration={8}
+          size={120}
+          colorFrom="#6366f1"
+          colorTo="#ec4899"
+          className="motion-reduce:hidden"
+        />
       </Card>
       <LoginErrorToast error={errorCode} />
     </main>
