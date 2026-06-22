@@ -53,6 +53,7 @@ export function NumberTicker({
           ref.current.textContent = Intl.NumberFormat("en-US", {
             minimumFractionDigits: decimalPlaces,
             maximumFractionDigits: decimalPlaces,
+            useGrouping: false,
           }).format(Number(latest.toFixed(decimalPlaces)))
         }
       }),
