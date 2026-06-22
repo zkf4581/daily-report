@@ -18,6 +18,7 @@ import { todayInTimeZone } from '@/lib/datetime'
 import { createClient } from '@/lib/supabase/server'
 
 import { saveTodayReport } from './actions'
+import { TodayConfetti } from './today-confetti'
 import { TodayToast } from './today-toast'
 
 export const metadata = { title: '今日日报' }
@@ -219,6 +220,7 @@ export default async function TodayPage({
         </Card>
       </div>
       <TodayToast error={errorCode} saved={savedCode} />
+      <TodayConfetti saved={savedCode} />
     </main>
   )
 }

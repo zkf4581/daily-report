@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 
 import { LogoutButton } from '@/components/logout-button'
+import { AnimatedGradientText } from '@/components/magicui/animated-gradient-text'
 import { Badge } from '@/components/ui/badge'
 import {
   Card,
@@ -91,7 +92,15 @@ export default async function HistoryPage() {
       <div className="flex w-full max-w-2xl flex-col gap-6">
         <header className="flex items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-semibold">我的历史日报</h1>
+            <h1 className="text-2xl font-semibold">
+              <AnimatedGradientText
+                className="motion-reduce:animate-none"
+                colorFrom="#6366f1"
+                colorTo="#ec4899"
+              >
+                我的历史日报
+              </AnimatedGradientText>
+            </h1>
             <p className="text-sm text-muted-foreground">
               只读时间线，倒序排列。过去日期不可再编辑。
             </p>

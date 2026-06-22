@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 
 import { LogoutButton } from '@/components/logout-button'
+import { BorderBeam } from '@/components/magicui/border-beam'
 import { Badge } from '@/components/ui/badge'
 import {
   Card,
@@ -16,6 +17,8 @@ import {
   todayInTimeZone,
 } from '@/lib/datetime'
 import { createClient } from '@/lib/supabase/server'
+
+import { AnimatedTotal } from './animated-total'
 
 export const metadata = { title: '管理员 · 外包历史' }
 
@@ -396,7 +399,7 @@ function SummaryCard({
   sums: { itemId: string; name: string; unit: string; total: number }[]
 }) {
   return (
-    <div className="flex flex-col gap-2 rounded-md border p-3">
+    <div className="relative flex flex-col gap-2 overflow-hidden rounded-md border p-3">
       <div className="flex items-center justify-between">
         <span className="text-sm font-medium">{title}</span>
         <span className="text-xs text-muted-foreground">提交 {days} 天</span>
@@ -409,13 +412,21 @@ function SummaryCard({
           {sums.map((s) => (
             <li key={s.itemId} className="flex items-center justify-between">
               <span>{s.name}</span>
-              <span className="font-medium">
-                {formatValue(s.total)} {s.unit}
+              <span className="font-medium tabular-nums">
+                <AnimatedTotal value={s.total} className="font-medium" />
+                {s.unit ? ` ${s.unit}` : ''}
               </span>
             </li>
           ))}
         </ul>
       )}
+      <BorderBeam
+        duration={10}
+        size={80}
+        colorFrom="#6366f1"
+        colorTo="#ec4899"
+        className="motion-reduce:hidden"
+      />
     </div>
   )
 }

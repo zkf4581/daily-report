@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 
 import { LogoutButton } from '@/components/logout-button'
+import { AnimatedGradientText } from '@/components/magicui/animated-gradient-text'
 import { SubmissionStatusBadge } from '@/components/status-badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -121,7 +122,15 @@ export default async function AdminPage({
       <div className="flex w-full max-w-5xl flex-col gap-6">
         <header className="flex items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-semibold">今日提交状态</h1>
+            <h1 className="text-2xl font-semibold">
+              <AnimatedGradientText
+                className="motion-reduce:animate-none"
+                colorFrom="#6366f1"
+                colorTo="#ec4899"
+              >
+                今日提交状态
+              </AnimatedGradientText>
+            </h1>
             <p className="text-sm text-muted-foreground">
               {displayName} · {adminTz} · 今天 {today}
             </p>
